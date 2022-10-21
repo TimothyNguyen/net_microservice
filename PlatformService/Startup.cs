@@ -34,8 +34,10 @@ namespace PlatformService
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
+            // You need to register the interface & dependency injection
+            services.AddScoped<IPlatformRepo, PlatformRepo>();
             services.AddControllers();
-            services.AddControllers();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PlatformService", Version = "v1" });
@@ -52,11 +54,19 @@ namespace PlatformService
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PlatformService v1"));
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseAuthorization();
+
+            
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+            
+            PrepDb.PrepPopulation(app);
 
             // app.UseEndpoints(endpoints =>
             // {
@@ -68,10 +78,6 @@ namespace PlatformService
             //         await context.Response.WriteAsync(File.ReadAllText("Protos/platforms.proto"));
             //     });
             // });
-
-
-            // PrepDb.PrepPopulation(app, env.IsProduction());
-
         }
     }
 }
